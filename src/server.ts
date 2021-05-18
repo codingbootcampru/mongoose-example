@@ -1,6 +1,7 @@
 import * as express from "express";
 import { Request, Response } from "express";
 import * as mongoose from "mongoose";
+import * as bodyParser from "body-parser";
 
 mongoose.connect("mongodb://localhost/test_mg", { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
@@ -8,13 +9,6 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function () {
     console.log("we are connected");
 });
-
-// const kittySchema = new mongoose.Schema({
-//     name: String,
-// });
-// const Kitten = mongoose.model("Kitten", kittySchema);
-// const silence = new Kitten({ name: "Silence" });
-// silence.save();
 
 // USERS
 const krUserSchema = new mongoose.Schema({
@@ -47,10 +41,21 @@ const krSessionSchema = new mongoose.Schema({
 const KrSession = mongoose.model("KrSession", krSessionSchema);
 
 const app = express();
+
+// parse application/json
+app.use(bodyParser.json());
+
 const port = 3000;
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");
+});
+
+app.post("/users", async (req: Request, res: Response) => {
+    const userData = req.body;
+    const user = new KrUser(userData);
+    const savedUser = await user.save();
+    return res.json(savedUser);
 });
 
 app.get("/courses", (req: Request, res: Response) => {
